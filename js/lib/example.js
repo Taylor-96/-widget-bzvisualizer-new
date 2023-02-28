@@ -1,4 +1,5 @@
-var widgets = require('@jupyter-widgets/base');
+//var widgets = require('@jupyter-widgets/base');
+import { DOMWidgetModel, DOMWidgetView } from '@jupyter-widgets/base';
 var _ = require('lodash');
 var $ = require('jquery');
 var BZVisualizer = require('brillouinzone-visualizer').BZVisualizer;
@@ -24,8 +25,10 @@ require('../css/brillouin.css');
 
 // When serialiazing the entire widget state for embedding, only values that
 // differ from the defaults will be specified.
-var BrillouinZoneModel = widgets.DOMWidgetModel.extend({
-    defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
+export class BrillouinZoneModel extends DOMWidgetModel {
+    defaults() {
+        return {
+        ...super.defaults(),
         _model_name: 'BrillouinZoneModel',
         _view_name: 'BrillouinZoneView',
         _model_module: 'widget-bzvisualizer',
@@ -33,25 +36,23 @@ var BrillouinZoneModel = widgets.DOMWidgetModel.extend({
         _model_module_version: '0.1.0',
         _view_module_version: '0.1.0',
         value: 'BrillouinZone World!'
-    })
-});
+        };
+    }
+}
 
 
 // Custom View. Renders the widget model.
-var BrillouinZoneView = widgets.DOMWidgetView.extend({
+//var BrillouinZoneView = widgets.DOMWidgetView.extend({
+export class BrillouinZoneView extends DOMWidgetView {
 
-    initialize: function () {
+    initialize () {
         this.canvasID = _.uniqueId("BZCanvas");
         this.infoID = _.uniqueId("info");
         this.BZVisualizer = new BZVisualizer(true, true, true, false);
-    },
-
-    events: {
-        'keypress #BZ-widget': 'toggle_faceColor',
-    },
+    }
 
     // Defines how the widget gets rendered into the DOM
-    render: function () {
+    render () {
         // Observe changes in the value traitlet in Python, and define
         // a custom callback.
         this.model.on('change:kpts', this.kpts_changed, this);
@@ -76,18 +77,18 @@ var BrillouinZoneView = widgets.DOMWidgetView.extend({
             that.BZVisualizer.loadBZ(canvasID = that.canvasID, infoID = that.infoID, jsondata = jsondata, enableInteraction = that.enableInteraction);
             that.BZVisualizer.set_visibility(faceColor);
         });
-    },
+    }
 
-    reloadBZ: function () {
+    reloadBZ () {
         var jsondata = this.model.get('jsondata');
         var faceColor = this.model.get('face_color');
         var enableInteraction = this.model.get('enable_interaction');
 
         this.BZVisualizer.loadBZ(canvasID = this.canvasID, infoID = this.infoID, jsondata = jsondata, enableInteraction = enableInteraction);
         this.BZVisualizer.set_visibility(faceColor);
-    },
+    }
 
-    toggle_faceColor: function (event) {
+    toggle_faceColor (event) {
         console.log("The key press is working.********:" + event.keyCode);
 
         if (event.keyCode == 84) {
@@ -95,22 +96,22 @@ var BrillouinZoneView = widgets.DOMWidgetView.extend({
             this.model.set('face_color', !faceColor);
             this.touch();
         }
-    },
+    }
 
-    kpts_changed: function () {
+    kpts_changed ()  {
         const kpts = this.model.get('kpts');
         this.BZVisualizer.update_kpts(kpts);
-    },
+    }
 
-    vectors_changed: function () {
+    vectors_changed () {
         const vectors = this.model.get('path_vectors');
         this.BZVisualizer.update_pathVector(vectors);
-    },
+    }
 
-    faceColor_changed: function () {
+    faceColor_changed () {
         this.BZVisualizer.set_visibility(this.model.get('face_color'));
     }
-});
+}
 
 
 module.exports = {
